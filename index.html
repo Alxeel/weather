@@ -3,22 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Погода</title>
+  <title>Погодное приложение</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
+  <style>
+    /* Базовые стили для быстрой проверки (если style.css не загрузится) */
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #72edf2, #5151e5);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      color: white;
+    }
+    .app {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 100%;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .search {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+    }
+    #city-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.3);
+      color: white;
+    }
+    button {
+      background: rgba(255, 255, 255, 0.3);
+      color: white;
+      cursor: pointer;
+    }
+    #weather-icon {
+      width: 80px;
+      height: 80px;
+    }
+  </style>
 </head>
 <body>
   <div class="app">
     <h1>🌤 Погода</h1>
-<div class="search">
-  <input type="text" id="city-input" placeholder="Введите город...">
-  <button id="search-btn">Поиск</button>
-  <button id="location-btn">📍 Моё местоположение</button>
-</div>
+    
+    <div class="search">
+      <input type="text" id="city-input" placeholder="Введите город...">
+      <button id="search-btn">Поиск</button>
+      <button id="location-btn">📍 Моё местоположение</button>
+    </div>
+
     <div id="weather-info">
-      <!-- Сюда подгрузится погода -->
+      <!-- Динамически заполняется через JS -->
+      <h2 id="city-name">—</h2>
+      <img id="weather-icon" src="https://openweathermap.org/img/wn/01d@2x.png" alt="Иконка погоды">
+      <p id="temperature">—°C</p>
+      <p id="description">—</p>
+      <p id="details">Влажность: —% | Ветер: — км/ч</p>
     </div>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
