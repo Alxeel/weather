@@ -1,0 +1,23 @@
+/* Основные стили (адаптивные под телефон) */
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #72edf2, #5151e5);
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Кнопки для сенсорных экранов */
+button {
+  padding: 12px 20px;
+  font-size: 16px;
+}
