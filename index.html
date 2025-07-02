@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Погода</title>
+  <title>Погодное приложение</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -42,7 +42,7 @@
       background: rgba(255, 255, 255, 0.3);
       color: white;
       cursor: pointer;
-      transition: 0.3s;
+      transition: background 0.3s;
     }
     button:hover {
       background: rgba(255, 255, 255, 0.5);
@@ -91,75 +91,97 @@
   </div>
 
   <script>
+    // Конфигурация
     const API_KEY = '9afab1350718864616f54a942d28c922';
+    const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
     
     // Элементы DOM
     const elements = {
-      city: document.getElementById('city-input'),
+      cityInput: document.getElementById('city-input'),
       searchBtn: document.getElementById('search-btn'),
       locationBtn: document.getElementById('location-btn'),
       cityName: document.getElementById('city-name'),
-      temp: document.getElementById('temperature'),
-      desc: document.getElementById('description'),
+      temperature: document.getElementById('temperature'),
+      description: document.getElementById('description'),
       details: document.getElementById('details'),
-      icon: document.getElementById('weather-icon')
+      weatherIcon: document.getElementById('weather-icon')
     };
 
-    // Обновление интерфейса
-    function updateUI(data) {
+    // Функция обновления интерфейса
+    function updateWeatherUI(data) {
       elements.cityName.textContent = data.name;
-      elements.temp.textContent = ${Math.round(data.main.temp)}°C;
-      elements.desc.textContent = data.weather[0].description;
+      elements.temperature.textContent = ${Math.round(data.main.temp)}°C;
+      elements.description.textContent = data.weather[0].description;
       elements.details.textContent = Влажность: ${data.main.humidity}% | Ветер: ${Math.round(data.wind.speed)} км/ч;
-      elements.icon.src = https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png;
+      elements.weatherIcon.src = https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png;
     }
 
-    // Геолокация
+    // Обработчик геолокации
     elements.locationBtn.addEventListener('click', () => {
+      console.log('Запрос геолокации...');
+      
       if (!navigator.geolocation) {
-        alert('Геолокация не поддерживается вашим браузером');
+        alert('Ваш браузер не поддерживает геолокацию');
         return;
       }
-      
+
       navigator.geolocation.getCurrentPosition(
-        async (pos) => {
+        async (position) => {
           try {
-            const { latitude, longitude } = pos.coords;
+            const { latitude, longitude } = position.coords;
+            console.log('Координаты:', latitude, longitude);
+            
             const response = await fetch(
-              https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=ru
+              ${BASE_URL}?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=ru
             );
+            
+            if (!response.ok) throw new Error('Ошибка API');
             const data = await response.json();
-            updateUI(data);
+            updateWeatherUI(data);
           } catch (error) {
-            alert('Ошибка при получении погоды');
+            console.error('Ошибка:', error);
+            alert('Не удалось получить погоду для вашего местоположения');
           }
         },
         (error) => {
-          alert(Ошибка геолокации: ${error.message});
+          console.error('Ошибка геолокации:', error);
+          alert(Ошибка: ${error.message || 'Доступ к геолокации запрещен'});
         },
-        { timeout: 10000 }
+        { 
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
       );
     });
 
-    // Поиск по городу
+    // Обработчик поиска по городу
     elements.searchBtn.addEventListener('click', async () => {
-      if (!elements.city.value.trim()) return;
+      const city = elements.cityInput.value.trim();
+      if (!city) return;
       
       try {
+        console.log('Поиск города:', city);
         const response = await fetch(
-          https://api.openweathermap.org/data/2.5/weather?q=${elements.city.value}&appid=${API_KEY}&units=metric&lang=ru
+          ${BASE_URL}?q=${city}&appid=${API_KEY}&units=metric&lang=ru
         );
+        
+        if (!response.ok) throw new Error('Город не найден');
         const data = await response.json();
-        updateUI(data);
+        updateWeatherUI(data);
       } catch (error) {
-        alert('Город не найден');
+        console.error('Ошибка:', error);
+        alert(error.message);
       }
     });
 
-    // Загрузка по Enter
-    elements.city.addEventListener('keypress', (e) => {
+    // Поиск по нажатию Enter
+    elements.cityInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') elements.searchBtn.click();
     });
+
+    // Инициализация
+    console.log('Приложение готово к работе');
   </script>
 </body>
 </html>
