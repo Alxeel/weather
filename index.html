@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Погодное приложение</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <title>Погода</title>
   <style>
-    /* Базовые стили для быстрой проверки (если style.css не загрузится) */
     body {
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #72edf2, #5151e5);
@@ -21,33 +18,46 @@
       backdrop-filter: blur(10px);
       border-radius: 20px;
       padding: 20px;
-      max-width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-      text-align: center;
     }
     .search {
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
     }
-    input, button {
+    #city-input {
+      flex: 1;
       padding: 10px;
       border: none;
       border-radius: 10px;
-    }
-    #city-input {
-      flex: 1;
       background: rgba(255, 255, 255, 0.3);
       color: white;
     }
     button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 10px;
       background: rgba(255, 255, 255, 0.3);
       color: white;
       cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+    #weather-info {
+      text-align: center;
     }
     #weather-icon {
       width: 80px;
       height: 80px;
+      margin: 10px 0;
+    }
+    #temperature {
+      font-size: 2.5rem;
+      margin: 10px 0;
     }
   </style>
 </head>
@@ -56,21 +66,100 @@
     <h1>🌤 Погода</h1>
     
     <div class="search">
-      <input type="text" id="city-input" placeholder="Введите город...">
-      <button id="search-btn">Поиск</button>
-      <button id="location-btn">📍 Моё местоположение</button>
+      <input 
+        type="text" 
+        id="city-input" 
+        placeholder="Введите город..."
+        aria-label="Поле ввода города"
+      >
+      <button id="search-btn" aria-label="Поиск погоды">Поиск</button>
+      <button id="location-btn" aria-label="Определить местоположение">📍 Моё местоположение</button>
     </div>
 
     <div id="weather-info">
-      <!-- Динамически заполняется через JS -->
       <h2 id="city-name">—</h2>
-      <img id="weather-icon" src="https://openweathermap.org/img/wn/01d@2x.png" alt="Иконка погоды">
+      <img 
+        id="weather-icon" 
+        src="https://openweathermap.org/img/wn/01d@2x.png" 
+        alt="Текущая погода"
+        aria-hidden="true"
+      >
       <p id="temperature">—°C</p>
       <p id="description">—</p>
       <p id="details">Влажность: —% | Ветер: — км/ч</p>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    const API_KEY = '9afab1350718864616f54a942d28c922';
+    
+    // Элементы DOM
+    const elements = {
+      city: document.getElementById('city-input'),
+      searchBtn: document.getElementById('search-btn'),
+      locationBtn: document.getElementById('location-btn'),
+      cityName: document.getElementById('city-name'),
+      temp: document.getElementById('temperature'),
+      desc: document.getElementById('description'),
+      details: document.getElementById('details'),
+      icon: document.getElementById('weather-icon')
+    };
+
+    // Обновление интерфейса
+    function updateUI(data) {
+      elements.cityName.textContent = data.name;
+      elements.temp.textContent = ${Math.round(data.main.temp)}°C;
+      elements.desc.textContent = data.weather[0].description;
+      elements.details.textContent = Влажность: ${data.main.humidity}% | Ветер: ${Math.round(data.wind.speed)} км/ч;
+      elements.icon.src = https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png;
+    }
+
+    // Геолокация
+    elements.locationBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        alert('Геолокация не поддерживается вашим браузером');
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          try {
+            const { latitude, longitude } = pos.coords;
+            const response = await fetch(
+              https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=ru
+            );
+            const data = await response.json();
+            updateUI(data);
+          } catch (error) {
+            alert('Ошибка при получении погоды');
+          }
+        },
+        (error) => {
+          alert(Ошибка геолокации: ${error.message});
+        },
+        { timeout: 10000 }
+      );
+    });
+
+    // Поиск по городу
+    elements.searchBtn.addEventListener('click', async () => {
+      if (!elements.city.value.trim()) return;
+      
+      try {
+        const response = await fetch(
+          https://api.openweathermap.org/data/2.5/weather?q=${elements.city.value}&appid=${API_KEY}&units=metric&lang=ru
+        );
+        const data = await response.json();
+        updateUI(data);
+      } catch (error) {
+        alert('Город не найден');
+      }
+    });
+
+    // Загрузка по Enter
+    elements.city.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') elements.searchBtn.click();
+    });
+  </script>
 </body>
 </html>
